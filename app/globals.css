@@ -1,0 +1,1 @@
+:root { --brand: #4F46E5; } @tailwind base; @tailwind components; @tailwind utilities; body{background:linear-gradient(to bottom,#fff,#f8fafc);}
