@@ -6,20 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AlertDemo from "@/components/AlertDemo";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+// Global type declarations
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    ym?: (id: number, action: string, goal: string) => void;
+  }
+}
 const BOT_USERNAME = "deadline_guard_bot";
 const GA4_ID = "G-500412522"; const YM_ID = 103653140; const brand={ primary:"#4F46E5" };
-const track=(n,p)=>{ try{window.gtag?.("event",n,p||{})}catch{}; try{window.ym&&YM_ID&&window.ym(YM_ID,"reachGoal",n)}catch{};};
+const track=(n: string, p?: any)=>{ try{window.gtag?.("event",n,p||{})}catch{}; try{window.ym&&YM_ID&&window.ym(YM_ID,"reachGoal",n)}catch{};};
 function shortUtm(){ try{ const raw=JSON.parse(localStorage.getItem("__utm")||"{}"); const src=raw.utm_source?.slice(0,8)||"src"; const cmp=raw.utm_campaign?.slice(0,10)||"cmp"; const md=raw.utm_medium?.slice(0,6)||"md"; const id=Math.random().toString(36).slice(2,8); return (`src_${src}|cmp_${cmp}|md_${md}|id_${id}`).slice(0,60);}catch{return "id_"+Math.random().toString(36).slice(2,8);}}
-const tgLink=(tag)=>`https://t.me/${BOT_USERNAME.replace(/^@/,"")}?start=lead_${tag}_${shortUtm()}`;
+const tgLink=(tag: string)=>`https://t.me/${BOT_USERNAME.replace(/^@/,"")}?start=lead_${tag}_${shortUtm()}`;
 function RoiCalculator(){
   const [orders,setOrders]=useState(300); const [lateRate,setLateRate]=useState(3); const [reducePct,setReducePct]=useState(60);
   const [margin,setMargin]=useState(400); const [penalty,setPenalty]=useState(300); const [plan,setPlan]=useState("starter");
-  const priceMap={starter:990, pro:2990, biz:4990};
+  const priceMap: Record<string, number>={starter:990, pro:2990, biz:4990};
   const {lateOrders,savedOrders,savingRub,roi,paybackDays}=useMemo(()=>{ const lateOrders=Math.max(0,Math.round((orders*lateRate)/100));
     const savedOrders=Math.round(lateOrders*(reducePct/100)); const savingRub=Math.round(savedOrders*(margin+penalty));
     const price=priceMap[plan]; const roi=price>0?Math.round((savingRub/price)*100):0; const paybackDays=price>0?Math.max(1,Math.ceil((price/Math.max(1,savingRub))*30)):0;
     return {lateOrders,savedOrders,savingRub,roi,paybackDays}; },[orders,lateRate,reducePct,margin,penalty,plan]);
-  return (<Card className="border-slate-200" id="calc">
+  return (<div id="calc"><Card className="border-slate-200">
     <CardHeader className="pb-3 flex items-center justify-between">
       <div className="flex items-center gap-3"><div className="p-2 rounded-xl bg-indigo-50 text-indigo-700"><Calculator size={22}/></div><CardTitle className="text-xl">Калькулятор окупаемости</CardTitle></div>
       <div className="flex items-center gap-2 text-xs text-slate-500"><BadgePercent size={16}/>Обычно снижаем просрочки ≈ на 60% (оценка)</div>
@@ -50,11 +58,11 @@ function RoiCalculator(){
           <p className="text-xs text-slate-500">Это оценка: точные цифры зависят от ваших показателей.</p>
         </div>
       </div>
-    </CardContent></Card>);
+    </CardContent></Card></div>);
 }
 export default function Landing(){
-  const [mp,setMp]=useState("both");
-  useEffect(()=>{ const url=new URL(window.location.href); const utm=["utm_source","utm_medium","utm_campaign","utm_term","utm_content"]; const obj={}; utm.forEach(k=>{const v=url.searchParams.get(k); if(v)obj[k]=v;}); if(Object.keys(obj).length){ localStorage.setItem("__utm",JSON.stringify(obj)); track("utm_capture",obj);} const mpParam=url.searchParams.get("mp"); if(["wb","ozon","both"].includes(String(mpParam))) setMp(String(mpParam)); },[]);
+  const [mp,setMp]=useState<"both"|"wb"|"ozon">("both");
+  useEffect(()=>{ const url=new URL(window.location.href); const utm=["utm_source","utm_medium","utm_campaign","utm_term","utm_content"]; const obj: Record<string, string>={}; utm.forEach(k=>{const v=url.searchParams.get(k); if(v)obj[k]=v;}); if(Object.keys(obj).length){ localStorage.setItem("__utm",JSON.stringify(obj)); track("utm_capture",obj);} const mpParam=url.searchParams.get("mp"); if(["wb","ozon","both"].includes(String(mpParam))) setMp(String(mpParam) as "both"|"wb"|"ozon"); },[]);
   const data=[{month:"Янв",saved:1},{month:"Фев",saved:4},{month:"Мар",saved:9},{month:"Апр",saved:13},{month:"Май",saved:20},{month:"Июн",saved:28}];
   return (<main className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-800">
     <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);} window.gtag=gtag; gtag('js',new Date()); gtag('config','${GA4_ID}');`}</Script>
@@ -73,7 +81,7 @@ export default function Landing(){
           <h1 className="text-3xl md:text-5xl font-bold leading-tight mt-4">Ноль просрочек FBS на {mp=="wb"?"Wildberries":mp=="ozon"?"Ozon":"WB и Ozon"}</h1>
           <p className="mt-4 text-slate-600 text-lg">Уведомления заранее + действия в 1 клик. Экономим на штрафах и сохраняем рейтинг.</p>
           <div className="mt-4 inline-flex items-center gap-2 text-sm"><span className="text-slate-600">Маркетплейс:</span>
-            {["wb","ozon","both"].map(x=>(<button key={x} onClick={()=>setMp(x)} className={`px-3 py-1.5 rounded-xl border ${mp===x?"bg-[var(--brand)] text-white border-[var(--brand)]":"bg-white"}`}>{x=="wb"?"WB":x=="ozon"?"Ozon":"Оба"}</button>))}
+            {(["wb","ozon","both"] as const).map(x=>(<button key={x} onClick={()=>setMp(x)} className={`px-3 py-1.5 rounded-xl border ${mp===x?"bg-[var(--brand)] text-white border-[var(--brand)]":"bg-white"}`}>{x=="wb"?"WB":x=="ozon"?"Ozon":"Оба"}</button>))}
           </div>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Button className="rounded-xl" href="#calc" onClick={()=>track("cta_hero_calc")}>Рассчитать окупаемость <ArrowRight className="ml-2" size={18}/></Button>
