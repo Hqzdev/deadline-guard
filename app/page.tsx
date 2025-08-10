@@ -2,9 +2,9 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Script from "next/script";
 import { ArrowRight, Bell, Clock, ShieldCheck, Truck, CheckCircle2, Activity, Sparkles, Calculator, BadgePercent, Gift } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import AlertDemo from "@/components/AlertDemo";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import AlertDemo from "../components/AlertDemo";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 // Global type declarations
