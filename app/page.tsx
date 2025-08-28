@@ -1,10 +1,11 @@
 "use client";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Script from "next/script";
-import { ArrowRight, Bell, Clock, ShieldCheck, Truck, CheckCircle2, Activity, Sparkles, Calculator, BadgePercent, Gift } from "lucide-react";
+import { ArrowRight, Bell, Clock, ShieldCheck, Truck, CheckCircle2, Activity, Sparkles, Gift, Calculator, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import AlertDemo from "../components/AlertDemo";
+import DeadlineGuardPro from "../components/DeadlineGuardPro";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 // Global type declarations
@@ -44,47 +45,7 @@ const track=(n: string, p?: any)=>{
 };
 function shortUtm(){ try{ const raw=JSON.parse(localStorage.getItem("__utm")||"{}"); const src=raw.utm_source?.slice(0,8)||"src"; const cmp=raw.utm_campaign?.slice(0,10)||"cmp"; const md=raw.utm_medium?.slice(0,6)||"md"; const id=Math.random().toString(36).slice(2,8); return (`src_${src}|cmp_${cmp}|md_${md}|id_${id}`).slice(0,60);}catch{return "id_"+Math.random().toString(36).slice(2,8);}}
 const tgLink=(tag: string)=>`https://t.me/${BOT_USERNAME.replace(/^@/,"")}?start=lead_${tag}_${shortUtm()}`;
-function RoiCalculator(){
-  const [orders,setOrders]=useState(300); const [lateRate,setLateRate]=useState(3); const [reducePct,setReducePct]=useState(60);
-  const [margin,setMargin]=useState(400); const [penalty,setPenalty]=useState(300); const [plan,setPlan]=useState("starter");
-  const priceMap: Record<string, number>={starter:990, pro:2990, biz:4990};
-  const {lateOrders,savedOrders,savingRub,roi,paybackDays}=useMemo(()=>{ const lateOrders=Math.max(0,Math.round((orders*lateRate)/100));
-    const savedOrders=Math.round(lateOrders*(reducePct/100)); const savingRub=Math.round(savedOrders*(margin+penalty));
-    const price=priceMap[plan]; const roi=price>0?Math.round((savingRub/price)*100):0; const paybackDays=price>0?Math.max(1,Math.ceil((price/Math.max(1,savingRub))*30)):0;
-    return {lateOrders,savedOrders,savingRub,roi,paybackDays}; },[orders,lateRate,reducePct,margin,penalty,plan]);
-  return (<div id="calc"><Card className="border-slate-200">
-    <CardHeader className="pb-3 flex items-center justify-between">
-      <div className="flex items-center gap-3"><div className="p-2 rounded-xl bg-indigo-50 text-indigo-700"><Calculator size={22}/></div><CardTitle className="text-xl">Калькулятор окупаемости</CardTitle></div>
-      <div className="flex items-center gap-2 text-xs text-slate-500"><BadgePercent size={16}/>Обычно снижаем просрочки ≈ на 60% (оценка)</div>
-    </CardHeader>
-    <CardContent>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div><label className="text-sm text-slate-600">Заказы FBS в месяц</label><input type="number" min={0} value={orders} onChange={e=>setOrders(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"/></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-sm text-slate-600">Просрочки без нас, %</label><input type="number" min={0} step={0.5} value={lateRate} onChange={e=>setLateRate(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"/></div>
-            <div><label className="text-sm text-slate-600">Снижение просрочек, %</label><input type="number" min={0} max={100} step={5} value={reducePct} onChange={e=>setReducePct(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"/></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-sm text-slate-600">Маржа/заказ, ₽</label><input type="number" min={0} step={10} value={margin} onChange={e=>setMargin(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"/></div>
-            <div><label className="text-sm text-slate-600">Штраф/издержки за просрочку, ₽</label><input type="number" min={0} step={10} value={penalty} onChange={e=>setPenalty(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"/></div>
-          </div>
-          <div><label className="text-sm text-slate-600">Тариф</label><div className="mt-2 flex gap-2">{["starter","pro","biz"].map(p=>(
-            <button key={p} onClick={()=>setPlan(p)} className={`px-3 py-2 rounded-xl text-sm border ${plan===p?"bg-[var(--brand)] text-white border-[var(--brand)]":"bg-white hover:bg-slate-50"}`}>{p=="starter"?"Starter (990)":p=="pro"?"Pro (2 990)":"Business (4 990)"}</button>
-          ))}</div></div>
-          <div><Button className="rounded-xl" href={tgLink("calc_submit")} target="_blank" onClick={()=>{track("cta_click",{location:"calculator",action:"submit"});track("calc_submit",{orders,lateRate,reducePct,margin,penalty,plan});}}>Рассчитать окупаемость <ArrowRight className="ml-2" size={16}/></Button></div>
-        </div>
-        <div className="grid gap-4 content-start">
-          <div className="p-4 rounded-2xl border bg-white/80"><p className="text-slate-500 text-sm">Просрочек без нас (в мес)</p><p className="text-2xl font-bold">{lateOrders}</p></div>
-          <div className="p-4 rounded-2xl border bg-emerald-50 border-emerald-200"><p className="text-emerald-700 text-sm">Спасём заказов в месяц</p><p className="text-2xl font-bold text-emerald-800">{savedOrders}</p></div>
-          <div className="p-4 rounded-2xl border bg-indigo-50 border-indigo-200"><p className="text-indigo-700 text-sm">Экономия в месяц</p><p className="text-2xl font-bold text-indigo-900">{savingRub.toLocaleString("ru-RU")} ₽</p></div>
-          <div className="p-4 rounded-2xl border bg-orange-50 border-orange-200"><p className="text-orange-700 text-sm">Окупаемость тарифа (ROI)</p><p className="text-xl font-semibold text-orange-800">{roi} % • Окупится примерно за {paybackDays} дн.</p></div>
-          <Button className="rounded-xl" href={tgLink("calc")} target="_blank" onClick={()=>{track("cta_click",{location:"calculator",action:"telegram"});track("cta_tg_click",{from:"calc"});}}>Перейти в Telegram <ArrowRight className="ml-2" size={16}/></Button>
-          <p className="text-xs text-slate-500">Это оценка: точные цифры зависят от ваших показателей.</p>
-        </div>
-      </div>
-    </CardContent></Card></div>);
-}
+
 export default function Landing(){
   const [mp,setMp]=useState<"both"|"wb"|"ozon">("both");
   useEffect(()=>{ 
@@ -119,7 +80,14 @@ export default function Landing(){
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-100">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2"><div className="w-9 h-9 rounded-2xl" style={{background:brand.primary}}/><span className="font-semibold text-slate-800">Deadline-Guard</span></div>
-        <nav className="hidden md:flex gap-6 text-sm text-slate-600"><a href="#features" className="hover:text-slate-900">Возможности</a><a href="#calc" className="hover:text-slate-900">Калькулятор</a><a href="#bonus" className="hover:text-slate-900">Бонус</a><a href="#pricing" className="hover:text-slate-900">Тарифы</a><a href="#faq" className="hover:text-slate-900">FAQ</a></nav>
+        <nav className="hidden md:flex gap-6 text-sm text-slate-600">
+          <a href="#features" className="hover:text-slate-900">Возможности</a>
+          <a href="#calc" className="hover:text-slate-900">Калькулятор</a>
+          <a href="#bonus" className="hover:text-slate-900">Бонус</a>
+          <a href="#pricing" className="hover:text-slate-900">Тарифы</a>
+          <a href="#faq" className="hover:text-slate-900">FAQ</a>
+          <a href="/deadline-guard" className="hover:text-slate-900 bg-indigo-100 px-3 py-1 rounded-lg">Deadline Guard Pro</a>
+        </nav>
         <div className="flex items-center gap-2"><Button className="rounded-xl" href={tgLink("header")} target="_blank" onClick={()=>{track("cta_click",{location:"header",action:"calculate"});track("hero_cta");}}>Рассчитать выгоду</Button></div>
       </div>
     </header>
@@ -168,6 +136,20 @@ export default function Landing(){
         <Card><CardHeader className="flex items-center gap-3 pb-2"><Activity className="text-indigo-600" size={22}/><CardTitle>Приоритет по риску</CardTitle></CardHeader><CardContent>Критично / важно / можно позже — с учётом упаковки и дороги.</CardContent></Card>
         <Card><CardHeader className="flex items-center gap-3 pb-2"><ShieldCheck className="text-indigo-600" size={22}/><CardTitle>Официальные интеграции</CardTitle></CardHeader><CardContent>Только открытые API WB и Ozon. Ключи у вас, можно отключить в 1 клик.</CardContent></Card>
       </div></div></section>
+
+    
+    {/* Deadline Guard Pro Section */}
+    <section className="py-16 bg-white">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Deadline Guard Pro</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Полнофункциональное приложение для контроля остатков, мониторинга SKU и аналитики заказов
+          </p>
+        </div>
+        <DeadlineGuardPro />
+      </div>
+    </section>
     <section id="bonus" className="py-16 bg-slate-50"><div className="max-w-6xl mx-auto px-4">
       <Card className="border-emerald-200"><CardHeader className="flex items-center gap-3"><Gift className="text-emerald-600" size={22}/><CardTitle>Бонус за 90 секунд в Telegram</CardTitle></CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-6 items-center"><div className="text-slate-600">

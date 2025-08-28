@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadline Guard Pro - Контроль остатков</title>
+    <link rel="stylesheet" href="app/globals.css?v=1.0">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="header">
+            <h1>Deadline Guard Pro</h1>
+            <div id="headerStats" class="header-stats">📦 0 | 🚨 0 | ⚠️ 0</div>
+        </header>
+
+        <!-- Навигация -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="calculator">Калькулятор</button>
+            <button class="tab-btn" data-tab="monitoring">Мониторинг</button>
+            <button class="tab-btn" data-tab="analytics">Аналитика</button>
+            <button class="tab-btn" data-tab="settings">Настройки</button>
+            <button class="tab-btn" data-tab="help">Помощь</button>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Калькулятор -->
+            <div id="calculator" class="tab-panel active">
+                <h2>Быстрый расчёт</h2>
+                <div class="calculator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calcSku">SKU</label>
+                            <input type="text" id="calcSku" placeholder="Название товара">
+                        </div>
+                        <div class="form-group">
+                            <label for="calcStock">Текущий остаток *</label>
+                            <input type="number" id="calcStock" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="calcSales">Продажи/день *</label>
+                            <input type="number" id="calcSales" placeholder="0" min="0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calcDelivery">Срок поставки *</label>
+                            <input type="number" id="calcDelivery" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="calcBuffer">Страховой запас</label>
+                            <input type="number" id="calcBuffer" placeholder="3" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="calcPeriod">Период заказа</label>
+                            <input type="number" id="calcPeriod" placeholder="30" min="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calcSeason">Сезонный коэффициент</label>
+                            <input type="number" id="calcSeason" placeholder="1" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="calcColor">Цвет</label>
+                            <input type="color" id="calcColor">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button onclick="calculate()" class="btn btn-primary">Рассчитать</button>
+                        <button onclick="clearCalc()" class="btn btn-secondary">Очистить</button>
+                        <button onclick="toMonitor()" class="btn btn-success">В мониторинг</button>
+                    </div>
+                </div>
+                
+                <div id="calcResults" class="calc-results" style="display: none;"></div>
+            </div>
+
+            <!-- Мониторинг -->
+            <div id="monitoring" class="tab-panel">
+                <h2>Мониторинг SKU</h2>
+                
+                <!-- Форма добавления -->
+                <div class="add-sku-form">
+                    <h3>Добавить SKU</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="monSku">SKU *</label>
+                            <input type="text" id="monSku" placeholder="Название товара">
+                        </div>
+                        <div class="form-group">
+                            <label for="monStock">Остаток *</label>
+                            <input type="number" id="monStock" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="monSales">Продажи/день *</label>
+                            <input type="number" id="monSales" placeholder="0" min="0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="monDelivery">Срок поставки *</label>
+                            <input type="number" id="monDelivery" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="monPeriod">Период заказа</label>
+                            <input type="number" id="monPeriod" placeholder="30" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="monColor">Цвет</label>
+                            <input type="color" id="monColor">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="monNotes">Заметки</label>
+                        <textarea id="monNotes" placeholder="Дополнительная информация"></textarea>
+                    </div>
+                    <button onclick="addSku()" class="btn btn-primary">Добавить SKU</button>
+                </div>
+
+                <!-- Таблица SKU -->
+                <div class="sku-table-container">
+                    <div class="table-actions">
+                        <label><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"> Выбрать все</label>
+                        <button onclick="sortSkus()" class="btn btn-secondary">Сортировать</button>
+                        <button onclick="clearAll()" class="btn btn-danger">Очистить всё</button>
+                        <button onclick="exportData()" class="btn btn-success">Экспорт CSV</button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="sku-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                    <th>SKU</th>
+                                    <th>Остаток</th>
+                                    <th>Продажи/день</th>
+                                    <th>Дней до нуля</th>
+                                    <th>Заказать до</th>
+                                    <th>Период</th>
+                                    <th>Статус</th>
+                                    <th>Заметки</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="skuTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Аналитика -->
+            <div id="analytics" class="tab-panel">
+                <h2>Аналитика</h2>
+                
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Общая статистика</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="analyticsTotal">0</div>
+                                <div class="stat-label">Всего SKU</div>
+                            </div>
+                            <div class="stat-item critical">
+                                <div class="stat-value" id="analyticsCritical">0</div>
+                                <div class="stat-label">Критично</div>
+                            </div>
+                            <div class="stat-item warning">
+                                <div class="stat-value" id="analyticsWarning">0</div>
+                                <div class="stat-label">Внимание</div>
+                            </div>
+                            <div class="stat-item success">
+                                <div class="stat-value" id="analyticsSafe">0</div>
+                                <div class="stat-label">В норме</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>Рекомендации</h3>
+                        <div id="analyticsRecommendations"></div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>Напоминания</h3>
+                        <div id="todayReminders"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Настройки -->
+            <div id="settings" class="tab-panel">
+                <h2>Настройки</h2>
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Параметры по умолчанию</h3>
+                        <div class="form-group">
+                            <label for="settingsBuffer">Страховой запас (дни)</label>
+                            <input type="number" id="settingsBuffer" min="0" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label for="settingsPeriod">Период заказа (дни)</label>
+                            <input type="number" id="settingsPeriod" min="1" value="30">
+                        </div>
+                        <button onclick="saveSettings()" class="btn btn-primary">Сохранить</button>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>Внешний вид</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                                Тёмная тема
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>Импорт/Экспорт</h3>
+                        <div class="form-group">
+                            <label for="importCSV">Импорт CSV</label>
+                            <input type="file" id="importCSV" accept=".csv" onchange="importCSV(event)">
+                        </div>
+                        <div class="form-group">
+                            <label for="backupFile">Восстановление</label>
+                            <input type="file" id="backupFile" accept=".json" onchange="restoreData(event)">
+                        </div>
+                        <button onclick="backupData()" class="btn btn-secondary">Создать бэкап</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Помощь -->
+            <div id="help" class="tab-panel">
+                <h2>Помощь</h2>
+                <div class="help-content">
+                    <h3>Как пользоваться</h3>
+                    <p><strong>Калькулятор</strong> - быстрый расчёт для одного товара. Заполните обязательные поля и нажмите "Рассчитать".</p>
+                    <p><strong>Мониторинг</strong> - управление списком товаров. Добавляйте SKU, отслеживайте остатки и получайте уведомления.</p>
+                    <p><strong>Аналитика</strong> - общая картина по всем товарам с рекомендациями.</p>
+                    
+                    <h3>Формулы</h3>
+                    <ul>
+                        <li><strong>Дней хватит</strong> = Остаток ÷ Продажи/день</li>
+                        <li><strong>Когда заказывать</strong> = Дней хватит - Срок поставки - Страховой запас</li>
+                        <li><strong>Рекомендуемый объём</strong> = Продажи/день × Период заказа</li>
+                    </ul>
+                    
+                    <h3>Статусы</h3>
+                    <ul>
+                        <li><span class="status danger">Критично</span> - заказывать срочно (≤ 0 дней)</li>
+                        <li><span class="status warning">Внимание</span> - заказывать в ближайшие 3 дня</li>
+                        <li><span class="status success">В норме</span> - всё в порядке</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="components/calculator.js?v=1.0"></script>
+</body>
+</html>
