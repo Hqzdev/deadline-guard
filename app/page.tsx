@@ -88,7 +88,11 @@ export default function Landing(){
           <a href="#faq" className="hover:text-slate-900">FAQ</a>
           <a href="/deadline-guard" className="hover:text-slate-900 bg-indigo-100 px-3 py-1 rounded-lg">Deadline Guard Pro</a>
         </nav>
-        <div className="flex items-center gap-2"><Button className="rounded-xl" href={tgLink("header")} target="_blank" onClick={()=>{track("cta_click",{location:"header",action:"calculate"});track("hero_cta");}}>Рассчитать выгоду</Button></div>
+        <div className="flex items-center gap-2">
+          <Button asChild className="rounded-xl">
+            <a href={tgLink("header")} target="_blank" onClick={()=>{track("cta_click",{location:"header",action:"calculate"});track("hero_cta");}}>Рассчитать выгоду</a>
+          </Button>
+        </div>
       </div>
     </header>
     <section className="relative overflow-hidden">
@@ -101,8 +105,16 @@ export default function Landing(){
             {(["wb","ozon","both"] as const).map(x=>(<button key={x} onClick={()=>{setMp(x); track("marketplace_change", {marketplace: x});}} className={`px-3 py-1.5 rounded-xl border ${mp===x?"bg-[var(--brand)] text-white border-[var(--brand)]":"bg-white"}`}>{x=="wb"?"WB":x=="ozon"?"Ozon":"Оба"}</button>))}
           </div>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <Button className="rounded-xl" href={tgLink("hero_calc")} target="_blank" onClick={()=>{track("cta_click",{location:"hero",action:"calculate"});track("cta_hero_calc");}}>Рассчитать окупаемость <ArrowRight className="ml-2" size={18}/></Button>
-            <Button variant="secondary" className="rounded-xl" href={tgLink("hero")} target="_blank" onClick={()=>{track("cta_click",{location:"hero",action:"telegram"});track("cta_tg_click",{from:"hero"});}}>В Telegram за 90 секунд</Button>
+            <Button asChild className="rounded-xl">
+              <a href={tgLink("hero_calc")} target="_blank" onClick={()=>{track("cta_click",{location:"hero",action:"calculate"});track("cta_hero_calc");}}>
+                Рассчитать окупаемость <ArrowRight className="ml-2" size={18}/>
+              </a>
+            </Button>
+            <Button asChild variant="secondary" className="rounded-xl">
+              <a href={tgLink("hero")} target="_blank" onClick={()=>{track("cta_click",{location:"hero",action:"telegram"});track("cta_tg_click",{from:"hero"});}}>
+                В Telegram за 90 секунд
+              </a>
+            </Button>
           </div>
           <div className="mt-6 flex items-center gap-5 text-sm text-slate-500">
             <div className="flex items-center gap-2"><ShieldCheck size={16} className="text-emerald-600"/> Официальные API</div>
@@ -154,7 +166,7 @@ export default function Landing(){
       <Card className="border-emerald-200"><CardHeader className="flex items-center gap-3"><Gift className="text-emerald-600" size={22}/><CardTitle>Бонус за 90 секунд в Telegram</CardTitle></CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-6 items-center"><div className="text-slate-600">
         <ul className="list-disc ml-5 space-y-2"><li><b>Чек-лист PDF</b> «12 причин просрочек FBS и как их закрыть»</li><li><b>Скидка Founders-100</b>: 990 ₽/мес на 6 месяцев</li><li><b>Приоритетный доступ</b> в первую волну</li></ul></div>
-        <div className="space-y-3"><Button className="rounded-xl w-full" href={tgLink("bonus")} target="_blank" onClick={()=>{track("cta_click",{location:"bonus",action:"telegram"});track("cta_tg_click",{from:"bonus"});}}>Забрать бонус в Telegram <ArrowRight className="ml-2" size={16}/></Button>
+        <div className="space-y-3"><Button asChild className="rounded-xl w-full"><a href={tgLink("bonus")} target="_blank" onClick={()=>{track("cta_click",{location:"bonus",action:"telegram"});track("cta_tg_click",{from:"bonus"});}}>Забрать бонус в Telegram <ArrowRight className="ml-2" size={16}/></a></Button>
         <p className="text-xs text-slate-500">Сначала отправим PDF, затем 5 коротких вопросов — ~90 секунд.</p></div></CardContent></Card></div></section>
     <section id="faq" className="py-16 bg-slate-50"><div className="max-w-6xl mx-auto px-4"><h2 className="text-2xl md:text-3xl font-bold mb-8">Вопросы и ответы</h2>
       <div className="grid md:grid-cols-2 gap-5 text-slate-700">
